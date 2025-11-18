@@ -35,39 +35,40 @@ export default function App() {
   if (!isLoaded) return <div>Loading Maps...</div>;
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex gap-2">
-<Autocomplete
-  onLoad={(autocomplete) => {
-    autocompleteRef.current = autocomplete;
-  }}
-  onPlaceChanged={() => {
-    const place = autocompleteRef.current?.getPlace();
-    if (place?.geometry?.location) {
-      const lat = place.geometry.location.lat();
-      const lng = place.geometry.location.lng();
-      setCenter({ lat, lng });
-      // any other logic you want (e.g., update radius/circle)
-    }
-  }}
->
-  <input
-    type="text"
-    placeholder="Search location"
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const place = autocompleteRef.current?.getPlace();
-        if (place?.geometry?.location) {
-          const lat = place.geometry.location.lat();
-          const lng = place.geometry.location.lng();
-          setCenter({ lat, lng });
-        }
-      }
-    }}
-    className="w-full p-3 border rounded-lg"
-  />
-</Autocomplete>
+  <div className="flex flex-col h-screen bg-gray-50">
+    <header className="p-4 bg-white shadow border-b">
+      {/* … your search inputs … */}
+      <div className="w-full flex justify-center">
+        <Autocomplete
+          onLoad={(autocomplete) => {
+            autocompleteRef.current = autocomplete;
+          }}
+          onPlaceChanged={() => {
+            const place = autocompleteRef.current?.getPlace();
+            if (place?.geometry?.location) {
+              const lat = place.geometry.location.lat();
+              const lng = place.geometry.location.lng();
+              setCenter({ lat, lng });
+            }
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search location"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const place = autocompleteRef.current?.getPlace();
+                if (place?.geometry?.location) {
+                  const lat = place.geometry.location.lat();
+                  const lng = place.geometry.location.lng();
+                  setCenter({ lat, lng });
+                }
+              }
+            }}
+            className="w-full max-w-lg p-3 border rounded-lg"
+          />
+        </Autocomplete>
 
         <input
           type="number"
@@ -78,9 +79,11 @@ export default function App() {
           className="w-32 p-3 border rounded-lg"
         />
       </div>
+    </header>
 
+    <main className="flex-grow">
       <GoogleMap
-        mapContainerStyle={mapContainerStyle}
+        mapContainerStyle={{ width: "100%", height: "100%" }}
         center={center}
         zoom={10}
       >
@@ -96,6 +99,8 @@ export default function App() {
           }}
         />
       </GoogleMap>
-    </div>
-  );
+    </main>
+  </div>
+);
+
 }
