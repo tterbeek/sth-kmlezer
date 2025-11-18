@@ -9,7 +9,7 @@ const mapContainerStyle = {
   height: "500px",
 };
 
-const defaultCenter = { lat: 51.505, lng: -0.09 };
+const defaultCenter = { lat: 50.850, lng: 4.349 };
 
 export default function App() {
   const autocompleteRef = useRef(null);
