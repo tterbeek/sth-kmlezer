@@ -6,7 +6,7 @@ const GOOGLE_API_KEY = "AIzaSyCRhrRARRTYZomKTLeKJlQHnf0cBMSF-7o";  // replace
 
 const mapContainerStyle = {
   width: "100%",
-  height: "500px",
+  height: "800px",
 };
 
 const defaultCenter = { lat: 50.850, lng: 4.349 };
