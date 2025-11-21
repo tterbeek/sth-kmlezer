@@ -1,106 +1,110 @@
-
+// src/App.jsx
 import React, { useState, useRef, useCallback, useMemo } from "react";
 import { GoogleMap, useLoadScript, Marker, Circle, Autocomplete } from "@react-google-maps/api";
 
-const GOOGLE_API_KEY = "AIzaSyCRhrRARRTYZomKTLeKJlQHnf0cBMSF-7o";  // replace
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "800px",
-};
+console.log("Using GOOGLE_API_KEY:", GOOGLE_API_KEY);
 
+const libraries = ["places"];
 const defaultCenter = { lat: 50.850, lng: 4.349 };
 
 export default function App() {
   const autocompleteRef = useRef(null);
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_API_KEY,
-    libraries: ["places"],
+    libraries,
   });
 
   const [center, setCenter] = useState(defaultCenter);
   const [radiusKm, setRadiusKm] = useState(5);
 
-  const onPlaceChanged = useCallback((autocomplete) => {
-    const place = autocomplete.getPlace();
-    if (place.geometry?.location) {
-      setCenter({
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
-      });
-    }
-  }, []);
+  const radiusMeters = useMemo(() => radiusKm * 1000, [radiusKm]);
 
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Maps...</div>;
+  if (loadError) return <div>Error loading Maps</div>;
+  if (!isLoaded) return <div>Loading Maps…</div>;
 
   return (
-  <div className="flex flex-col h-screen bg-gray-50">
-    <header className="p-4 bg-white shadow border-b">
-      {/* … your search inputs … */}
-      <div className="w-full flex justify-center">
-        <Autocomplete
-          onLoad={(autocomplete) => {
-            autocompleteRef.current = autocomplete;
-          }}
-          onPlaceChanged={() => {
-            const place = autocompleteRef.current?.getPlace();
-            if (place?.geometry?.location) {
-              const lat = place.geometry.location.lat();
-              const lng = place.geometry.location.lng();
-              setCenter({ lat, lng });
-            }
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Search location"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                const place = autocompleteRef.current?.getPlace();
-                if (place?.geometry?.location) {
-                  const lat = place.geometry.location.lat();
-                  const lng = place.geometry.location.lng();
-                  setCenter({ lat, lng });
-                }
+    <div className="flex flex-col h-screen bg-gray-50">
+      <header className="p-4 bg-white shadow border-b">
+        <div className="w-full flex justify-center gap-2">
+          <Autocomplete
+            onLoad={(autocomplete) => {
+              autocompleteRef.current = autocomplete;
+            }}
+            onPlaceChanged={() => {
+              const place = autocompleteRef.current?.getPlace();
+              if (place?.geometry?.location) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                setCenter({ lat, lng });
               }
             }}
-            className="w-full max-w-lg p-3 border rounded-lg"
+          >
+            <input
+              type="text"
+              placeholder="Search location"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const place = autocompleteRef.current?.getPlace();
+                  if (place?.geometry?.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    setCenter({ lat, lng });
+                  }
+                }
+              }}
+              className="w-full max-w-lg p-3 border rounded-lg"
+            />
+          </Autocomplete>
+
+          <input
+            type="text"
+            placeholder="Distance (km)"
+            value={radiusKm}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (!isNaN(v)) {
+                setRadiusKm(v);
+              } else {
+                setRadiusKm(0);
+              }
+            }}
+            className="w-32 p-3 border rounded-lg"
           />
-        </Autocomplete>
+        </div>
+      </header>
 
-        <input
-          type="number"
-          min="0.1"
-          step="0.1"
-          value={radiusKm}
-          onChange={(e) => setRadiusKm(parseFloat(e.target.value) || 0.1)}
-          className="w-32 p-3 border rounded-lg"
-        />
-      </div>
-    </header>
-
-    <main className="flex-grow">
-      <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "100%" }}
-        center={center}
-        zoom={10}
-      >
-        <Marker position={center} />
-        <Circle
+      <main className="flex-grow">
+        <GoogleMap
+          mapContainerStyle={{ width: "100%", height: "100%" }}
           center={center}
-          radius={radiusKm * 1000}
-          options={{
-            fillColor: "#3b82f6",
-            fillOpacity: 0.2,
-            strokeColor: "blue",
-            strokeWeight: 2,
-          }}
-        />
-      </GoogleMap>
-    </main>
-  </div>
-);
-
+          zoom={10}
+        >
+          <Marker
+            position={center}
+            draggable={true}
+            onDragEnd={(e) => {
+              const lat = e.latLng.lat();
+              const lng = e.latLng.lng();
+              setCenter({ lat, lng });
+            }}
+          />
+          {radiusKm > 0 && (
+            <Circle
+              center={center}
+              radius={radiusMeters}
+              options={{
+                fillColor: "#3b82f6",
+                fillOpacity: 0.2,
+                strokeColor: "blue",
+                strokeWeight: 2,
+              }}
+            />
+          )}
+        </GoogleMap>
+      </main>
+    </div>
+  );
 }
