@@ -59,21 +59,25 @@ export default function App() {
             />
           </Autocomplete>
 
+<div className="relative w-40">
   <input
-  type="text"
-  placeholder="Distance"
-  value={radiusKm}
-  onChange={(e) => {
-    const v = parseFloat(e.target.value);
-    if (!isNaN(v)) {
-      setRadiusKm(v);
-    } else {
-      setRadiusKm(0);
-    }
-  }}
-  className="w-28 p-3 border rounded-lg"
-/>
-<span className="ml-2 text-sm text-gray-600">km</span>
+    type="text"
+    placeholder="Distance"
+    value={radiusKm}
+    onChange={(e) => {
+      const v = parseFloat(e.target.value);
+      if (!isNaN(v)) {
+        setRadiusKm(v);
+      } else {
+        setRadiusKm(0);
+      }
+    }}
+    className="w-full px-4 pr-10 py-3 border rounded-lg text-lg"
+  />
+  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-lg text-gray-600">
+    km
+  </span>
+</div>
         </div>
       </header>
 
