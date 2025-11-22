@@ -18,8 +18,10 @@ export default function App() {
 
   const [center, setCenter] = useState(defaultCenter);
   const [radiusKm, setRadiusKm] = useState(5);
-
+  const mapRef = useRef(null);
+  const [zoom, setZoom] = useState(10);  // default zoom value
   const radiusMeters = useMemo(() => radiusKm * 1000, [radiusKm]);
+
 
   if (loadError) return <div>Error loading Maps</div>;
   if (!isLoaded) return <div>Loading Maps…</div>;
@@ -32,14 +34,23 @@ export default function App() {
             onLoad={(autocomplete) => {
               autocompleteRef.current = autocomplete;
             }}
-            onPlaceChanged={() => {
-              const place = autocompleteRef.current?.getPlace();
-              if (place?.geometry?.location) {
-                const lat = place.geometry.location.lat();
-                const lng = place.geometry.location.lng();
-                setCenter({ lat, lng });
+           onPlaceChanged={() => {
+            const place = autocompleteRef.current?.getPlace();
+            if (place?.geometry?.location) {
+              const lat = place.geometry.location.lat();
+              const lng = place.geometry.location.lng();
+              setCenter({ lat, lng });
+
+              if (place.geometry.viewport) {
+                // tell map to fit these bounds
+                mapRef.current.fitBounds(place.geometry.viewport);
+              } else {
+                // fallback: setZoom to a default for country
+                setZoom(defaultCountryZoom);
               }
-            }}
+            }
+          }}
+
           >
             <input
               type="text"
@@ -82,12 +93,13 @@ export default function App() {
       </header>
 
       <main className="flex-grow">
-        <GoogleMap
-          mapContainerStyle={{ width: "100%", height: "100%" }}
-          center={center}
-          zoom={10}
-        >
-          <Marker
+<GoogleMap
+  mapContainerStyle={{ width: "100%", height: "100%" }}
+  center={center}
+  zoom={zoom}   
+  onLoad={(map) => { mapRef.current = map; }}  // if you’re capturing ref
+>
+            <Marker
             position={center}
             draggable={true}
             onDragEnd={(e) => {
